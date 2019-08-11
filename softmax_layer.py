@@ -8,15 +8,15 @@ class SoftmaxLayer:
 
     def forward(self, input):
         self.last_input_shape = input.shape
-        
+
         input = input.flatten()
 
         totals = np.dot(input, self.weights) + self.biases
-        
+
         exp = np.exp(totals)
 
         S = np.sum(exp, axis = 0)
-        
+
         out = exp / S
 
         self.last_totals = totals
@@ -41,17 +41,17 @@ class SoftmaxLayer:
 
         d_L_d_out = - 1 / p
 
-        d_out_d_t = - np.exp(p) * exp / (S ** 2)
-        d_out_d_t[label] = np.exp(p) * (S - np.exp(p)) / (S ** 2)
+        d_out_d_t = - exp[label] * exp / (S ** 2)
+        d_out_d_t[label] = exp[label] * (S - exp[label]) / (S ** 2)
 
         d_L_d_t = d_L_d_out * d_out_d_t
 
-        d_L_d_w = d_t_d_w[:, np.newaxis] @ d_L_d_t[np.newaxis]
+        d_L_d_w = d_t_d_w[np.newaxis].T.dot(d_L_d_t[np.newaxis])
         d_L_d_b = d_L_d_t * d_t_d_b
-        d_L_d_inputs = d_t_d_inputs @ d_L_d_t
+        d_L_d_inputs = d_t_d_inputs.dot(d_L_d_t)
 
         self.weights -= learn_rate * d_L_d_w
         self.biases -= learn_rate * d_L_d_b
-        
+
         return d_L_d_inputs.reshape(self.last_input_shape)
-        
+

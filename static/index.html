@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="28" height="28"></canvas>
+    <button id="recognize">识别</button>
+    <button id="clear">清空</button>
+    <p>识别结果: <span id="result"></span></p>
+
+    <script>
+        const $canvas = document.querySelector('#canvas');
+        const ctx = $canvas.getContext('2d');
+        const $recognize = document.querySelector('#recognize');
+        const $clear = document.querySelector('#clear');
+        const $result = document.querySelector('#result');
+
+        let isDrawing = false;
+        ctx.strokeStyle = 'black';
+
+        $canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - $canvas.offsetLeft, e.clientY - $canvas.offsetTop);
+        });
+
+        $canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) {
+                return;
+            }
+
+            ctx.lineTo(e.clientX - $canvas.offsetLeft, e.clientY - $canvas.offsetTop);
+            ctx.stroke();
+        });
+
+        $canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        $recognize.addEventListener('click', () => {
+            $result.innerHTML = '...';
+
+            const { data } = ctx.getImageData(0, 0, $canvas.width, $canvas.height);
+            const result = [];
+
+            for (let i = 0; i < data.length; i += 4) {
+                const alpha = data[i + 3];
+                const row = Math.floor(i / 4 / 28);
+                const col = i / 4 % 28
+                if (!result[row]) {
+                    result[row] = [];
+                }
+
+                result[row][col] = alpha;
+            }
+
+            fetch('/recognize?data=' + JSON.stringify(result))
+                .then(resp => resp.json())
+                .then(digit => {
+                    $result.innerHTML = digit;
+                });
+        });
+
+        $clear.addEventListener('click', () => {
+            ctx.clearRect(0, 0, $canvas.width, $canvas.height);
+        });
+    </script>
+</body>
+</html>

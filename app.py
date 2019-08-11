@@ -3,7 +3,11 @@ import json
 from main import check
 import numpy as np
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 @app.route('/recognize', methods=['GET'])
 def recognize():
@@ -13,7 +17,7 @@ def recognize():
     digit = check(arr)
 
     resp = Response(str(digit))
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+    # resp.headers['Access-Control-Allow-Origin'] = '*'
 
     return resp
 

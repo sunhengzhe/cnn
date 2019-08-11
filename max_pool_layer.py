@@ -2,7 +2,7 @@ import numpy as np
 
 class MaxPoolLayer:
     def iterate_regions(self, image):
-        n, w, h = image.shape
+        w, h, n = image.shape
 
         for i in range(w // 2):
             for j in range(h // 2):

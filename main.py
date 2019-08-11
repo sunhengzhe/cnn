@@ -1,6 +1,6 @@
 import mnist
 import numpy as np
-from conv_layer import ConvLayer 
+from conv_layer import ConvLayer
 from max_pool_layer import MaxPoolLayer
 from softmax_layer import SoftmaxLayer
 
@@ -12,6 +12,13 @@ test_labels = mnist.test_labels()[:1000]
 conv = ConvLayer(8)
 pool = MaxPoolLayer()
 softmax = SoftmaxLayer(13 * 13 * 8, 10)
+
+def check(image):
+  out = conv.forward((image / 255) - 0.5)
+  out = pool.forward(out)
+  out = softmax.forward(out)
+
+  return np.argmax(out)
 
 def forward(image, label):
   '''
@@ -52,30 +59,21 @@ def train(im, label, lr=.005):
 
 print('MNIST CNN initialized!')
 
-# Train the CNN for 3 epochs
-for epoch in range(3):
-  print('--- Epoch %d ---' % (epoch + 1))
+# Train!
+loss = 0
+num_correct = 0
+for i, (im, label) in enumerate(zip(train_images, train_labels)):
+  if i > 0 and i % 100 == 99:
+    print(
+      '[Step %d] Past 100 steps: Average Loss %.3f | Accuracy: %d%%' %
+      (i + 1, loss / 100, num_correct)
+    )
+    loss = 0
+    num_correct = 0
 
-  # Shuffle the training data
-  permutation = np.random.permutation(len(train_images))
-  train_images = train_images[permutation]
-  train_labels = train_labels[permutation]
-
-  # Train!
-  loss = 0
-  num_correct = 0
-  for i, (im, label) in enumerate(zip(train_images, train_labels)):
-    if i > 0 and i % 100 == 99:
-      print(
-        '[Step %d] Past 100 steps: Average Loss %.3f | Accuracy: %d%%' %
-        (i + 1, loss / 100, num_correct)
-      )
-      loss = 0
-      num_correct = 0
-
-    l, acc = train(im, label)
-    loss += l
-    num_correct += acc
+  l, acc = train(im, label)
+  loss += l
+  num_correct += acc
 
 # Test the CNN
 print('\n--- Testing the CNN ---')

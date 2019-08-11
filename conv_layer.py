@@ -6,10 +6,10 @@ class ConvLayer:
         self.filters = np.random.randn(num_of_filters, 3, 3) / 9
 
     def iterate_regions(self, image):
-        n, w = image.shape
+        w, h = image.shape
 
         for i in range(w - 2):
-            for j in range(w - 2):
+            for j in range(h - 2):
                 block = image[i:i+3, j:j+3]
                 yield block, i, j
 
